@@ -133,7 +133,7 @@ _For each of these steps, make sure you reload the page that's running locally t
   ```
    You can see here that this function gets called when the app loads. We create a variable that holds all our database’s messages. Then, when a value changes, the app will retrieve a new copy of what’s in the database, empty out what’s in the `stream` div on your page, and if there are messages to display, it’ll iterate over that array of messages and put each message body on the page. Now, try to show just the title on the page — or both. How would you do that?
 
-IV. Additional features
+## IV. Additional features
 
 1. When you submit a post, the text inputs don't clear back to empty. Is there a way we could use jQuery to reset the fields for the next post? _Check the commented out code in our `main.js` file if you get stuck._
 2. Right now, the login button always shows “log in”. How do we get it to show “log out” when the user is currently logged in? How do we stop the app from showing the message stream when the user isn’t logged in? _Check the commented out code in our `main.js` file if you get stuck_
