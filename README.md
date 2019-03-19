@@ -102,6 +102,7 @@ _For each of these steps, make sure you reload the page that's running locally t
       };
  ```
    - Next, we need to send that data to the database. We want to store our messages in something we’ll call a `stream`. We’ll help you with the two lines you’ll need: 
+  
   ```
     var newPostKey = firebase.database().ref().child('stream').push().key;
     firebase.database().ref('/stream/' + newPostKey).set(postData);
