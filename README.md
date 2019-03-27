@@ -1,127 +1,147 @@
-# Base Web App
+# Database Web App
+Check it out at: https://hidden-inlet-38981.herokuapp.com/
 
-Check it out at: https://pacific-bastion-31399.herokuapp.com/
+Make sure you've followed all instructions for BaseWebApp. Today, we’ll be building a message stream app, where users can add posts that will be saved to a database and then displayed to the page. While this repo has full working code for hooking up our database to the application, we encourage you not to fork it like you did with BaseWebApp. Try things on your own, and if you get stuck, the code is here as a resource for you.
 
-### Phase 1: Base Web App
-Mission- Get up and running with the Base Web App. Should be able to run locally and be deployed on Heroku. 
+The files that you're going to change are `project/js/main.js`, `project/html/pages/index.ejs`, and `project/html/helpers/head.ejs`.
 
-##### 0. Before you get started:
-- [ ] <a href="https://signup.heroku.com/" target="_blank">Create Heroku account (primary language = node)</a>
-- [ ] <a href="https://toolbelt.heroku.com/" target="_blank">Download and install Heroku's command line tools</a>
-- [ ] <a href="https://github.com/join" target="_blank">Create Github account</a>
-- [ ] <a href="https://help.github.com/articles/set-up-git/#setting-up-git" target="_blank">Download and install Git (github's command line tool)</a>
-- [ ] <a href="https://nodejs.org/en/download/" target="_blank">Download and install Node.js</a>
-- [ ] Download and install a text editor (I recommend <a href="https://code.visualstudio.com/" target="_blank">Visual Studio Code</a>)
+## I. Get your Firebase database set up
 
-##### 1. Make a copy of my existing project on github by forking the project at https://github.com/zsobin/BaseWebApp.git
-<img width="400" alt="github" src="https://cloud.githubusercontent.com/assets/17851174/25285298/b990a2ae-2687-11e7-845c-2673aa704689.png">
 
-##### 2. Find and open your terminal 
-<img width="115" alt="screen shot 2017-04-21 at 11 43 48 am" src="https://cloud.githubusercontent.com/assets/17851174/25285319/ce48dafe-2687-11e7-9fba-3262f406235f.png">
+1. First, log in to your Google account (or create one) and 'Add Project' on Firebase, a database service built by Google, at `https://console.firebase.google.com`. Name it whatever you like!
 
-*Note: on Windows, it might be called Git Shell or Git BASH.*
+2. When your database is ready, it should take you to an overview page. We'll come back to this.
 
-##### 3. Use the command line to navigate to your desktop:
-- `ls` lists all files in a directory. If you're on a PC, the command is `dir` instead. 
+3. In the sidebar, select 'Develop' -> 'Authentication' and then the 'Set up sign-in method' in the middle of the page. Select Google for now, flip the switch to 'Enable', add your email address if required, then save. This will make Google the sign-in method to use your web application. _Can you think of why we'd want to make people log in before they can use your app? Ask a HubSpotter near you what they think!_
+
+4. While still on the sign in method page, scroll down and add your app's base url to the `Authorized domains` list (in my case, I added `hidden-inlet-38981.herokuapp.com`). This essentially gives your app permission to use the database.
+
+5. In the sidebar, select 'Develop' -> 'Database', and click the “Create Database” button. Change your security rules to “Test Mode” — we want to be able to read and write to our database, after all. After your database is created, select the dropdown that says "Cloud Firestore" on the header, and switch your database to "Realtime Database".
+
+6. On this same screen, select the top nav item "Rules". Make sure the rules look like the code below, then publish your changes:
 ```
-	cd ~/Desktop 
-	ls 
-```
-you should see all the items on your desktop displayed in text in the terminal like so: 
-
-![oct-12-2016 21-51-18](https://cloud.githubusercontent.com/assets/17851174/25285297/b97b3586-2687-11e7-8d0a-075baed899c4.gif)
-
-
-##### 4. Clone the Repository 
-When you create (or in this case, fork) a repository on GitHub, it exists as a remote repository. You can clone your repository to create a local copy on your computer and sync between the two locations. Use the command line to 
- - (1) clone your project from Github onto your own computer, then 
- - (2) navigate into the project and then 
- - (3) list all the files in the project:
-
-```
-	git clone https://github.com/YourUserName/BaseWebApp.git 
-	cd BaseWebApp
-	ls
+      {
+        "rules": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        }
+      }
 ```
 
-##### 5. Initialize app for Heroku
-Use the command line to create an app on Heroku, which prepares Heroku to receive your source code (and initializes a url for you) 
+## II. Add Firebase to your app
+
+
+1. While still on the Firebase website, go back to “Project Overview” in the left navigation and select the angle brackets under 'Get started by adding Firebase to your app'.
+<div style="text-align:center"><img src ="https://d2mxuefqeaa7sj.cloudfront.net/s_0B2FBC1C225F1AB4C2B888C7BB8510368E050ED500396ECDF2923157F2823B9A_1552942056201_image.png" /></div>
+
+2. You should see a bunch of code pop up. Copy that code, and paste it into your `head.ejs` file before the link to your app’s `main.js` file. 
+
+3. Next, we need to hoop up your API key. Leaving API keys in your code is bad — bots continuously scrape Github looking for API Keys to abuse! These next steps help you "hide" your API key from the code that lives on Github, but still makes it accessible to your app.
+
+4. Run `heroku config:set API_KEY=whatever-your-API-key-is` in your terminal, substituting `whatever-your-API-key-is` for the string of characters that come after the apiKey variable in that block of code you just copied over. Don’t include the quotation marks.
+
+_Remember that you must stop your server in order to do this. If your server is still running from before, you can press control + c to halt it._
+
+5. Then run `heroku config:get API_KEY -s >> .env`. This writes the `API_KEY` variable to a file named `.env`. This file will never be pushed to Github/Heroku; the web app will read from this file locally, and will pull it from Heroku's own configuration system once deployed. This way you can use API_KEY in your local environment and on Heroku without actually having it in your code.
+
+6. In your `head.ejs` file, replace your API key with the environment variable we just created: `"``<%= process.env.API_KEY %>``"`
+
+_Remember, you can restart your server by running `heroku local web`._
+
+_There are 2 ways to interact with a database. To use Firebase, we're using the API they provided. The other way would be to access a database directly through server-side code. The server-side code would then pass the relevant data to the page that gets rendered. Can you think of why you would choose one over the other? Ask a HubSpotter what they think!_
+
+
+## III. Get the data into the database, and out of it.
+
+_For each of these steps, make sure you reload the page that's running locally to check that it's working._
+
+1. We want users to be able to submit their own messages to the database. For that, we’ll need a form. Check out this resource (https://www.w3schools.com/html/html_forms.asp) for building forms in HTML. 
+   - For your form, you’ll want input fields for your post title and post body (make sure each of these fields has a unique `id` so we can grab the value later).
+   - You’ll also want a button to submit the form. Feel free to modify the button that’s already on your page from BaseWebApp, since we’ll also be using an `onClick` handler to submit the form. Go ahead and build that, checking to make sure you can see it on the page. 
+
+
+2. Next, we need to make sure that the user is logged in before they can submit anything to the database. 
+   - Add another button to the top of your page. Make the text something like “Log in”, and set `onClick` equal to `"toggleSignIn()"` — that’s the function that we’ll use to sign users in. Give that, too, an `id`.
+   - Since the code part is a little tricky, we’ll give you a hint. You’ll want to copy the following code into your `main.js` file, but make sure to give it a read so you understand what it’s doing:
+  ```
+    // Gets called whenever the user clicks "sign in" or "sign out".
+    function toggleSignIn() {
+      if (!firebase.auth().currentUser) { // if the user's not logged in, handle login
+        var provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/plus.login');
+        firebase.auth().signInWithPopup(provider).then(function(result) {
+          console.log("success");
+        }).catch(function(error) {
+          console.error("error", error);
+        });
+      } else { // handle logout
+        firebase.auth().signOut();
+      }
+      //This disables the button until login or logout is successful. You'll want to replace 'login-button' with the id of your login button.
+      $('#login-button').attr("disabled", true);
+    }
 ```
-	heroku login
-	heroku create
+   - Save everything, then click the login button to check that it works. You should see a pop up asking you to sign in or select an account. Once that’s done, you can check your developer console to make sure it worked (Chrome > View > Developer > Developer Tools) — you’ll see “success” if the login was successful, and an error if it wasn’t.
+
+
+3. Next, we want to send some data to the database! 
+   - First, we want to collect the data from the input fields when the form is submitted. For the form button, set the `onClick` to `handleMessageFormSubmit()` — that’s the function we’ll call when we want to submit the form.
+   - Now, we’ll need to write that function. Go into `main.js` and create that function — if you need some help, just look at the other functions in that file!
+   - In this function, we’ll want to actually grab the values from the text fields. We can do that using jQuery and the text field’s `id`, and setting that equal to a variable. It’ll look something like:  `var title = $("#post-title").val();` Here, our text field’s `id` was `post-title`, but be sure to set that value to whatever your field’s `id` is. 
+   - Create a variable for the post body in the same way. If you’d like to make sure these are working, you can log them in your console by writing `console.log(title);` under your two variable declarations. Then save your work, refresh your web app’s page, type some text in the input fields in your web app, click the submit button, and check your developer console to make sure it’s pulled the variables correctly (Chrome > View > Developer > Developer Tools). If you see the value `null`, it hasn’t — go back and check your work.
+   - Once that’s working, we’ll want to actually send it to the database. We’ll call another function to do this. Inside your `handleMessageFormSubmit()` function, call a function called addMessage, and pass in the two variables you’ve just created: `addMessage(body, title);`(in our case, they were `body` and `title`).
+   _Remember, if you’re lost, feel free to check out the code in this repo for reference!_
+
+
+4. Now it’s time to write the addMessage function — make sure to pass the body and title in as variables. 
+   - Next, you’ll want to put the data into a format that can be saved — called JSON (here’s some more info on JSON if you’d like more reference). We’re going to create a variable called postData, then set it equal to some key/value pairs for the body and title. It’ll end up looking something like:
 ```
-
-*Note: On Windows, the first command might 'hang' for quite some time (even up to 10-15 minutes) - do not cancel and restart it, usually after this first 'long' run, it works without issues later on.*
-
-If you experience any issues with Heroku CLI, please refer to https://devcenter.heroku.com/articles/heroku-cli#troubleshooting and your error log file.
-
-##### 6. Install dependencies
-Install the project’s dependencies using npm, a tool used to install any other projects your project needs in order to run locally. View the dependencies your app needs [here](https://github.com/zsobin/BaseWebApp/blob/master/package.json#L9). 
-```
-	npm install 
-```
-
-##### 7. Run the project on your machine (your local server)
-```
-	heroku local web	
-```
-
-##### 8. View the project running locally
-Open a browser and navigate to `localhost:5000`
+      var postData = {
+        title: title,
+        body: body
+      };
+ ```
+   - Next, we need to send that data to the database. We want to store our messages in something we’ll call a `stream`. We’ll help you with the two lines you’ll need: 
+  
+  ```
+    var newPostKey = firebase.database().ref().child('stream').push().key;
+    firebase.database().ref('/stream/' + newPostKey).set(postData);
+  ```
+   In this code, we create a variable called `newPostKey`, create a new `stream` object in our database, then get the key for the post we just created. Then, referencing that new post we just created, we send it the JSON data using the `postData` variable we just created.
+   - Now, save you work, then go to your app and try submitting some data in your form. Check your console to see if there were any errors. If not, you should be able to go to Firebase and click on Develop > Database. Under the Data tab, you should see the data that you just saved!
 
 
-##### 9. Make a change in the code and refresh the page running at `localhost:5000`
-Open the project with Sublime text or whichever text editor you installed. Make a change to your code (ex. In `index.ejs` change the header text) and refresh your web browser- you should see the change!
+5. We’ve gotten our data into our database. Now, we need to get that data from the database and display it on the page for the world to see!
+   - First, we’ll need to create a place for that data to live. In your `index.ejs` page, under your form, create a div with an `id` called “stream”. 
+   - We’ll help you with the second part — retrieving the data from the database. This is the function you’ll want to use:
+  ```
+    window.onload = function() {
+      const databaseStreamReference = firebase.database().ref('/stream/');
+    
+      databaseStreamReference.on('value', function(snapshot) {
+        var messages = snapshot.val();
+        $('#stream').empty();
+    
+        if (messages) {
+          Object.keys(messages).forEach(function (key) {
+            const message = messages[key];
+            $('#stream').append(`<div>${message.body}</div>`);
+          });
+        }
+      });
+    };
+  ```
+   You can see here that this function gets called when the app loads. We create a variable that holds all our database’s messages. Then, when a value changes, the app will retrieve a new copy of what’s in the database, empty out what’s in the `stream` div on your page, and if there are messages to display, it’ll iterate over that array of messages and put each message body on the page. Now, try to show just the title on the page — or both. How would you do that?
 
-Ejs is a templating language that stands for embedded javascript. It's like HTML but with some special sauce mixed in so that you can add in a little javascript that gets compiled to HTML before it's send to the browser. We won't really be using it for anything other than HTML today though.
+## IV. Additional features
 
-Few editors that you might find helpful:
-* [Sublime Text](https://www.sublimetext.com/) - free to evaluate, but requires licence if you plan to use it every day
-* [Atom](https://atom.io/) - completely free editor
-* [Visual Studio Code](https://code.visualstudio.com/) - another free to use editor
-
-In fact, any text editor will  work - if you have favourite one, please use it!
-
-##### 10. Link github repo to heroku
-This is kind of a weird step but it's worth it- What this does is essentially connects your heroku app to a Github Repository. It monitors the repository and whenever it sees you push a change, it automatically re-deploys your application so that your changes are incorporated in your live site. 
-
- - Go to https://dashboard.heroku.com/apps
- - Select your app
- - Click the tab ‘Deploy’ 
- - In Deployment Method, select ‘Connect to Github’
- - Search for your Repo- "BaseWebApp"
- - Click 'connect' and then 'Enable Automatic Deploys'
- 
-_*We use automatic deploys at HubSpot - but ours go to a 'QA' or 'staging' site. Can you think of why we might do that? Ask a hubspotter near you what they think!_
-
-##### 11. Push that change to github (which automatically deploys on Heroku)
-*If your server is still running from before (it probably is), you can press control + c to halt it
-
-```
-	git add .
-	git commit -m “made my first change” 
-	git push origin master
-```
-
-##### 12. View your app live! (it might take a few seconds to finish deploying)
-```
-	heroku open 
-```	
-
-### Phase 2 - Continue to work off of ‘Hello World’ 
-
-A few tips before you begin:
- - **Test often**- when you make a change, make sure it works. You don't want to add a bunch of stuff and spend tons of time tracking a little thing down.
- - **Google everything!** - Google is a developers best friend. I'm not joking. No one actually just _knows_ this stuff... you just get really good at knowing what to google and reading/incorporating the answers you find. 
- - **Ask for help** - Everyone around you is dying to help you out! Don't be afraid to ask, no matter how silly you think your question is (because trust me, it's not). 
-
- [Option 1 - Personal website](https://github.com/zsobin/PersonalWebApp): This is the easier option, using only HTML and CSS. 
-
- [Option 2 - Incorporate database](https://github.com/zsobin/DatabaseWebApp): this is more challenging, and only recommended for attendees who are familiar with HTML, CSS and a little bit of javascript. 	
-
-Step-by-step instructions for these can be found in the repo READMEs. 
-
-
+1. When you submit a post, the text inputs don't clear back to empty. Is there a way we could use jQuery to reset the fields for the next post? _Check the commented out code in our `main.js` file if you get stuck._
+2. Right now, the login button always shows “log in”. How do we get it to show “log out” when the user is currently logged in? How do we stop the app from showing the message stream when the user isn’t logged in? _Check the commented out code in our `main.js` file if you get stuck_
+3. What if we want to send the user’s information to the database as well? We’ll give you a hint — you can get the user information by creating a user variable like so: `var user = firebase.auth().currentUser;`. Then you can get the user’s name like so: `var author = user.displayName;` How would you send that information to the database? How would you get that user’s picture and display it next to their entry? Remember, if you want more insight into what’s going on, write `console.log()` with whatever value you’d like in the parentheses. Then, when the code runs, that value will show in the developer tools. _Check the commented out code in our `main.js` file if you get stuck_
+4. Add a "like" feature for posts. This would involve a few steps:
+   - Add a button to each post
+   - Use javascript and jQuery to monitor when someone clicks the button.
+   - When someone does click the "like" button, use the post's key to update a "likes" counter on the object already saved in Firebase. To keep track of the key when the `onClick` handler is called, check out something in Javascript called "bind". To update a field in Firebase, your function will look VERY similar to `addMessage()`, except using `.update(postData)` instead of `.set(postData)`.
 
 
 ----------------------------------------------------------------------------------------------
