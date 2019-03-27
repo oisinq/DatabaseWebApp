@@ -22,8 +22,6 @@ function handleMessageFormSubmit() {
 	var title = $("#post-title").val();
 	var body = $("#post-body").val();
 	addMessage(body,title);
-	$("#post-title").val("");
-	$("#post-body").val("");
 }
 
 // This function gets called with the new message information.
