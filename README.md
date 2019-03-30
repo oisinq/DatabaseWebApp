@@ -44,7 +44,7 @@ _Remember that you must stop your server in order to do this. If your server is 
 
 5. Then run `heroku config:get API_KEY -s >> .env`. This writes the `API_KEY` variable to a file named `.env`. This file will never be pushed to Github/Heroku; the web app will read from this file locally, and will pull it from Heroku's own configuration system once deployed. This way you can use API_KEY in your local environment and on Heroku without actually having it in your code.
 
-6. In your `head.ejs` file, replace your API key with the environment variable we just created: `"``<%= process.env.API_KEY %>``"`
+6. In your `head.ejs` file, replace your API key with the environment variable we just created: `"<%= process.env.API_KEY %>"`
 
 _Remember, you can restart your server by running `heroku local web`._
 
